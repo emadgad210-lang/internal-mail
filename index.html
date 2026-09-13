@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>بريد الشركة الداخلي</title>
+<style>
+  :root{
+    --ink:#e9e7de;
+    --paper:#14181a;
+    --panel:#1c2225;
+    --line:#333c3f;
+    --accent:#4f9a83;
+    --accent-soft:#233531;
+    --danger:#e0685a;
+    --muted:#8b9296;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Segoe UI', Tahoma, Arial, sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    min-height:100vh;
+  }
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 24px;background:#0c0f10;color:#e9e7de;border-bottom:1px solid var(--line);
+  }
+  .topbar .brand{display:flex;align-items:center;gap:10px;font-size:17px;font-weight:600;letter-spacing:.3px;}
+  .topbar .brand span.mark{width:10px;height:10px;background:#c9a86a;display:inline-block;border-radius:2px;}
+  .who{display:flex;align-items:center;gap:10px;font-size:13px;}
+  select{
+    font-family:inherit;font-size:13px;padding:7px 10px;border-radius:6px;border:1px solid #4a5f5b;
+    background:#25423c;color:#f6f4ee;
+  }
+  .wrap{display:flex;max-width:1100px;margin:24px auto;gap:20px;padding:0 20px;}
+  .side{width:210px;flex-shrink:0;}
+  .compose-btn{
+    width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:8px;
+    font-size:14px;font-weight:600;cursor:pointer;margin-bottom:16px;
+  }
+  .compose-btn:hover{background:#264d42;}
+  .nav-item{
+    display:flex;justify-content:space-between;padding:10px 12px;border-radius:6px;font-size:13px;
+    cursor:pointer;color:var(--ink);margin-bottom:2px;
+  }
+  .nav-item:hover{background:var(--accent-soft);}
+  .nav-item.active{background:var(--accent-soft);font-weight:600;color:var(--accent);}
+  .badge{background:var(--accent);color:#fff;border-radius:10px;padding:0 7px;font-size:11px;}
+  .admin-toggle{margin-top:20px;padding-top:14px;border-top:1px solid var(--line);font-size:12px;color:var(--muted);cursor:pointer;}
+  .admin-toggle:hover{color:var(--accent);}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;flex:1;min-height:480px;overflow:hidden;}
+  .panel-head{padding:14px 18px;border-bottom:1px solid var(--line);font-size:14px;font-weight:600;display:flex;justify-content:space-between;align-items:center;}
+  .msg-row{padding:13px 18px;border-bottom:1px solid var(--line);cursor:pointer;display:flex;gap:12px;align-items:center;}
+  .msg-row:hover{background:#22282b;}
+  .msg-row .avatar{width:32px;height:32px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+  .msg-row .meta{flex:1;min-width:0;}
+  .msg-row .line1{display:flex;justify-content:space-between;font-size:13px;}
+  .msg-row .line1 b{font-weight:600;}
+  .msg-row .line1 span{color:var(--muted);font-size:11px;}
+  .msg-row .snippet{color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
+  .empty{padding:60px 20px;text-align:center;color:var(--muted);font-size:13px;}
+  .reader{padding:20px 24px;}
+  .reader h3{margin:0 0 6px;font-size:16px;}
+  .reader .info{font-size:12px;color:var(--muted);margin-bottom:16px;}
+  .reader .body{font-size:14px;line-height:1.9;white-space:pre-wrap;}
+  .reader .actions{margin-top:20px;display:flex;gap:8px;}
+  .btn{padding:8px 14px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer;font-size:12px;}
+  .btn:hover{border-color:var(--accent);color:var(--accent);}
+  .backlink{font-size:12px;color:var(--accent);cursor:pointer;margin-bottom:10px;display:inline-block;}
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:10;}
+  .modal{background:var(--panel);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:22px;width:440px;max-width:92vw;}
+  .modal h3{margin:0 0 14px;font-size:15px;}
+  .field{margin-bottom:12px;}
+  .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;}
+  .field select, .field input, .field textarea{
+    width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:6px;font-family:inherit;font-size:13px;
+  }
+  .field textarea{min-height:120px;resize:vertical;}
+  .to-list{max-height:150px;overflow-y:auto;border:1px solid var(--line);border-radius:6px;padding:6px 10px;background:#fff;}
+  .to-item{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:13px;cursor:pointer;}
+  .to-item input{width:auto;margin:0;}
+  .to-hint{font-size:11px;color:var(--muted);margin-top:4px;}
+  .pass-wrap{position:relative;}
+  .pass-wrap input{padding-left:34px;}
+  .pass-toggle{
+    position:absolute;left:6px;top:50%;transform:translateY(-50%);
+    cursor:pointer;background:none;border:none;padding:4px;font-size:15px;line-height:1;color:var(--muted);
+  }
+  .pass-toggle:hover{color:var(--accent);}
+  .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;}
+  .error{color:var(--danger);font-size:12px;margin-top:4px;display:none;}
+  .admin-panel{padding:18px 22px;}
+  .acc-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px;}
+  .acc-row .tag{font-size:11px;padding:2px 8px;border-radius:10px;background:var(--accent-soft);color:var(--accent);}
+  .acc-row .tag.off{background:#3a2420;color:var(--danger);}
+  .small{font-size:12px;color:var(--muted);}
+  .add-acc{display:flex;gap:8px;margin-top:14px;}
+  .add-acc input{flex:1;padding:8px 10px;border:1px solid var(--line);border-radius:6px;font-family:inherit;font-size:13px;}
+  .field-row{display:flex;gap:10px;}
+
+  /* ===== شاشات التابلت والموبايل ===== */
+  @media (max-width: 760px){
+    .topbar{flex-wrap:wrap;gap:8px;padding:10px 14px;}
+    .topbar .who{flex-wrap:wrap;gap:6px;row-gap:6px;}
+    .wrap{flex-direction:column;margin:14px auto;padding:0 12px;gap:12px;}
+    .side{width:100%;}
+    .compose-btn{margin-bottom:10px;}
+    .nav-item{padding:11px 12px;}
+    .panel{min-height:0;}
+    .msg-row{padding:12px 14px;}
+    .msg-row .line1 span{white-space:nowrap;}
+    .reader{padding:16px 14px;}
+    .modal{width:94vw !important;padding:18px;}
+    .field-row{flex-direction:column;gap:0;}
+    .acc-row{flex-wrap:wrap;gap:8px;padding:12px 0;}
+    .acc-row > div:last-child{flex-wrap:wrap;justify-content:flex-start;width:100%;}
+    .add-acc{flex-wrap:wrap;}
+    .add-acc input{flex:1 1 100%;}
+  }
+  @media (max-width: 420px){
+    .topbar .brand{font-size:15px;}
+    .who .small{font-size:11px;}
+    .btn{padding:7px 10px;font-size:11px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand"><span class="mark"></span> بريد الشركة الداخلي</div>
+  <div class="who">
+    <span id="netstatus" class="small" style="color:#bcd; ">جاري التحميل...</span>
+    <button class="btn" id="exportBtn" style="background:transparent;color:#e9e7de;border-color:#4a5f5b;">تصدير البيانات</button>
+    <button class="btn" id="importBtn" style="background:transparent;color:#e9e7de;border-color:#4a5f5b;">استيراد البيانات</button>
+    <input type="file" id="importFile" accept="application/json" style="display:none;">
+    <span id="whoDisplay" class="small"></span>
+    <button class="btn" id="logoutBtn" style="display:none;background:transparent;color:#e9e7de;border-color:#4a5f5b;">تسجيل خروج</button>
+  </div>
+</div>
+
+<div class="wrap" id="appWrap" style="display:none;">
+  <div class="side">
+    <button class="compose-btn" onclick="openCompose()">+ رسالة جديدة</button>
+    <div class="nav-item active" data-folder="inbox" onclick="setFolder('inbox')">الوارد <span class="badge" id="inboxCount">0</span></div>
+    <div class="nav-item" data-folder="sent" onclick="setFolder('sent')">الصادر</div>
+    <div class="nav-item" data-folder="archive" onclick="setFolder('archive')">الأرشيف</div>
+    <div class="admin-toggle" id="adminToggleBtn" onclick="openAdmin()" style="display:none;">إدارة الحسابات والصلاحيات ›</div>
+  </div>
+
+  <div class="panel" id="mainPanel">
+    <div class="panel-head"><span id="folderTitle">الوارد</span></div>
+    <div id="listArea"></div>
+  </div>
+</div>
+
+<div id="modalRoot"></div>
+
+<script>
+let state = {
+  accounts: [],
+  messages: [],
+  me: null,
+  loggedIn: false,
+  folder: 'inbox',
+  openMsgId: null
+};
+
+// تخزين عبر السيرفر المحلي (Node.js) بدل localStorage — عشان البيانات تكون مشتركة بين كل الموظفين
+async function storageGet(key){
+  const res = await fetch('/api/storage/' + encodeURIComponent(key));
+  if(res.status === 404) return null;
+  if(!res.ok) throw new Error('server error');
+  return await res.json();
+}
+async function storageSet(key, value){
+  const res = await fetch('/api/storage/' + encodeURIComponent(key), {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({value})
+  });
+  if(!res.ok) throw new Error('server error');
+  return await res.json();
+}
+
+async function loadAll(){
+  document.getElementById('netstatus').textContent = 'جاري التحميل...';
+  try{
+    let accResult;
+    try{ accResult = await storageGet('accounts'); }
+    catch(e){ accResult = null; }
+    if(!accResult){
+      state.accounts = [
+        {id:'admin', name:'مدير النظام', active:true, admin:true, password:'admin123'},
+        {id:'sales', name:'المبيعات', active:true, admin:false, password:'sales123'},
+        {id:'hr', name:'الموارد البشرية', active:true, admin:false, password:'hr123'},
+        {id:'it', name:'تقنية المعلومات', active:true, admin:false, password:'it123'}
+      ];
+      await storageSet('accounts', JSON.stringify(state.accounts));
+    } else {
+      state.accounts = JSON.parse(accResult.value);
+    }
+
+    let msgResult;
+    try{ msgResult = await storageGet('messages'); }
+    catch(e){ msgResult = null; }
+    state.messages = msgResult ? JSON.parse(msgResult.value) : [];
+
+    document.getElementById('netstatus').textContent = 'متصل بالسيرفر';
+  }catch(err){
+    console.error('load error', err);
+    document.getElementById('netstatus').textContent = 'تعذر الاتصال بالسيرفر — تأكد إن جهاز السيرفر شغال ومتصل بنفس الشبكة';
+  }
+  populateWhoAmI();
+  showLogin();
+}
+
+function exportData(){
+  const payload = JSON.stringify({accounts: state.accounts, messages: state.messages}, null, 2);
+  const blob = new Blob([payload], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'بيانات-البريد-' + new Date().toISOString().slice(0,10) + '.json';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function importData(file){
+  const reader = new FileReader();
+  reader.onload = async ()=>{
+    try{
+      const data = JSON.parse(reader.result);
+      if(!Array.isArray(data.accounts) || !Array.isArray(data.messages)){
+        throw new Error('bad shape');
+      }
+      state.accounts = data.accounts;
+      state.messages = data.messages;
+      await saveAccounts();
+      await saveMessages();
+      populateWhoAmI();
+      render();
+      alert('تم استيراد البيانات بنجاح');
+    }catch(e){
+      console.error('import error', e);
+      alert('الملف غير صالح، تأكد إنه ملف تصدير من نفس النظام');
+    }
+  };
+  reader.readAsText(file);
+}
+
+document.getElementById('exportBtn').addEventListener('click', exportData);
+document.getElementById('importBtn').addEventListener('click', ()=>document.getElementById('importFile').click());
+document.getElementById('importFile').addEventListener('change', (e)=>{
+  if(e.target.files && e.target.files[0]) importData(e.target.files[0]);
+  e.target.value = '';
+});
+document.getElementById('logoutBtn').addEventListener('click', logout);
+
+function populateWhoAmI(){
+  updateWhoDisplay();
+}
+
+function updateWhoDisplay(){
+  const el = document.getElementById('whoDisplay');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const adminBtn = document.getElementById('adminToggleBtn');
+  if(state.loggedIn){
+    const acc = state.accounts.find(a=>a.id===state.me);
+    if(!acc || !acc.active){ logout(); return; }
+    el.textContent = acc.name + ' — ' + acc.id + '@company.local';
+    logoutBtn.style.display = 'inline-block';
+    adminBtn.style.display = acc.admin ? 'block' : 'none';
+  } else {
+    el.textContent = '';
+    logoutBtn.style.display = 'none';
+    adminBtn.style.display = 'none';
+  }
+}
+
+function logout(){
+  state.loggedIn = false;
+  state.me = null;
+  state.openMsgId = null;
+  document.getElementById('appWrap').style.display = 'none';
+  updateWhoDisplay();
+  showLogin();
+}
+
+function showLogin(){
+  const root = document.getElementById('modalRoot');
+  const options = state.accounts.filter(a=>a.active)
+    .map(a=>`<option value="${a.id}">${a.id}@company.local — ${a.name}</option>`).join('');
+  root.innerHTML = `
+    <div class="overlay" id="loginOverlay">
+      <div class="modal" style="width:380px;">
+        <h3>تسجيل الدخول</h3>
+        <div class="field"><label>البريد</label><select id="lEmail">${options}</select></div>
+        <div class="field"><label>كلمة المرور</label>
+          <div class="pass-wrap">
+            <input type="password" id="lPass">
+            <button type="button" class="pass-toggle" id="lPassToggle" title="إظهار/إخفاء كلمة المرور">👁</button>
+          </div>
+        </div>
+        <div class="error" id="lError">البريد أو كلمة المرور غير صحيحة</div>
+        <div class="small" style="margin-top:8px;">نسيت كلمة المرور؟ اطلب من مدير النظام تغييرها من إدارة الحسابات.</div>
+        <div class="modal-actions">
+          <button class="btn" id="lSubmit" style="background:var(--accent);color:#fff;border-color:var(--accent);">دخول</button>
+        </div>
+      </div>
+    </div>`;
+  const doLogin = ()=>{
+    const id = document.getElementById('lEmail').value;
+    const pass = document.getElementById('lPass').value;
+    const acc = state.accounts.find(a=>a.id===id && a.active);
+    const err = document.getElementById('lError');
+    if(!acc || acc.password !== pass){
+      err.style.display = 'block';
+      return;
+    }
+    err.style.display = 'none';
+    state.me = id;
+    state.loggedIn = true;
+    state.folder = 'inbox';
+    state.openMsgId = null;
+    root.innerHTML = '';
+    document.getElementById('appWrap').style.display = 'flex';
+    updateWhoDisplay();
+    render();
+  };
+  document.getElementById('lSubmit').onclick = doLogin;
+  document.getElementById('lPass').addEventListener('keydown', (e)=>{ if(e.key==='Enter') doLogin(); });
+  document.getElementById('lPassToggle').onclick = ()=>{
+    const inp = document.getElementById('lPass');
+    const btn = document.getElementById('lPassToggle');
+    if(inp.type === 'password'){ inp.type = 'text'; btn.textContent = '🙈'; }
+    else { inp.type = 'password'; btn.textContent = '👁'; }
+  };
+}
+
+async function saveMessages(){
+  try{
+    await storageSet('messages', JSON.stringify(state.messages));
+  }catch(e){ console.error('save error', e); alert('تعذر حفظ التغييرات، حاول مرة أخرى.'); }
+}
+async function saveAccounts(){
+  try{
+    await storageSet('accounts', JSON.stringify(state.accounts));
+  }catch(e){ console.error('save error', e); alert('تعذر حفظ التغييرات، حاول مرة أخرى.'); }
+}
+
+function accName(id){
+  const a = state.accounts.find(a=>a.id===id);
+  return a ? a.name : id;
+}
+function initials(name){
+  return name.trim().slice(0,2);
+}
+function fmtTime(ts){
+  const d = new Date(ts);
+  return d.toLocaleDateString('ar-EG',{day:'numeric',month:'short'}) + ' ' + d.toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'});
+}
+
+function setFolder(f){
+  state.folder = f; state.openMsgId = null;
+  document.querySelectorAll('.nav-item[data-folder]').forEach(el=>{
+    el.classList.toggle('active', el.dataset.folder===f);
+  });
+  render();
+}
+
+function currentList(){
+  const me = state.me;
+  if(state.folder==='inbox'){
+    return state.messages.filter(m=>m.to===me && !(m.archivedBy||[]).includes(me))
+      .sort((a,b)=>b.ts-a.ts);
+  }
+  if(state.folder==='sent'){
+    return state.messages.filter(m=>m.from===me).sort((a,b)=>b.ts-a.ts);
+  }
+  return state.messages.filter(m=>(m.archivedBy||[]).includes(me)).sort((a,b)=>b.ts-a.ts);
+}
+
+function render(){
+  const titles = {inbox:'الوارد', sent:'الصادر', archive:'الأرشيف'};
+  document.getElementById('folderTitle').textContent = titles[state.folder];
+  const inboxCount = state.messages.filter(m=>m.to===state.me && !(m.archivedBy||[]).includes(state.me) && !(m.readBy||[]).includes(state.me)).length;
+  document.getElementById('inboxCount').textContent = inboxCount;
+
+  const listArea = document.getElementById('listArea');
+  if(state.openMsgId){
+    renderReader(listArea);
+    return;
+  }
+  const list = currentList();
+  if(!list.length){
+    listArea.innerHTML = '<div class="empty">لا توجد رسائل هنا</div>';
+    return;
+  }
+  listArea.innerHTML = '';
+  list.forEach(m=>{
+    const row = document.createElement('div');
+    row.className='msg-row';
+    const otherId = state.folder==='sent' ? m.to : m.from;
+    const unread = m.to===state.me && !(m.readBy||[]).includes(state.me);
+    row.innerHTML = `
+      <div class="avatar">${initials(accName(otherId))}</div>
+      <div class="meta">
+        <div class="line1"><b style="${unread?'':'font-weight:400'}">${state.folder==='sent' ? 'إلى: '+accName(otherId) : accName(otherId)}</b><span>${fmtTime(m.ts)}</span></div>
+        <div class="snippet">${unread?'● ':''}${m.subject}</div>
+      </div>`;
+    row.onclick = ()=>{ state.openMsgId = m.id; markRead(m); render(); };
+    listArea.appendChild(row);
+  });
+}
+
+function markRead(m){
+  if(m.to===state.me){
+    m.readBy = m.readBy || [];
+    if(!m.readBy.includes(state.me)){ m.readBy.push(state.me); saveMessages(); }
+  }
+}
+
+function renderReader(container){
+  const m = state.messages.find(x=>x.id===state.openMsgId);
+  if(!m){ state.openMsgId=null; render(); return; }
+  const archived = (m.archivedBy||[]).includes(state.me);
+  container.innerHTML = `
+    <div class="reader">
+      <span class="backlink" id="backBtn">‹ رجوع إلى ${state.folder==='inbox'?'الوارد':state.folder==='sent'?'الصادر':'الأرشيف'}</span>
+      <h3>${m.subject}</h3>
+      <div class="info">من: ${accName(m.from)} — إلى: ${accName(m.to)} — ${fmtTime(m.ts)}</div>
+      <div class="body"></div>
+      <div class="actions">
+        <button class="btn" id="replyBtn">رد</button>
+        <button class="btn" id="archiveBtn">${archived?'إخراج من الأرشيف':'أرشفة'}</button>
+      </div>
+    </div>`;
+  container.querySelector('.body').textContent = m.body;
+  container.querySelector('#backBtn').onclick = ()=>{ state.openMsgId=null; render(); };
+  container.querySelector('#replyBtn').onclick = ()=>openCompose(m.from, 'رد: '+m.subject);
+  container.querySelector('#archiveBtn').onclick = ()=>{
+    m.archivedBy = m.archivedBy || [];
+    if(archived){ m.archivedBy = m.archivedBy.filter(x=>x!==state.me); }
+    else { m.archivedBy.push(state.me); }
+    saveMessages();
+    state.openMsgId=null;
+    render();
+  };
+}
+
+function openCompose(toId, subject){
+  const root = document.getElementById('modalRoot');
+  const options = state.accounts.filter(a=>a.active && a.id!==state.me)
+    .map(a=>`<label class="to-item"><input type="checkbox" value="${a.id}" ${a.id===toId?'checked':''}> ${a.name}</label>`).join('');
+  root.innerHTML = `
+    <div class="overlay" id="composeOverlay">
+      <div class="modal">
+        <h3>رسالة جديدة</h3>
+        <div class="field">
+          <label>إلى</label>
+          <div class="to-list" id="cToList">${options}</div>
+          <div class="to-hint">تقدر تختار أكتر من شخص، هتتبعت لكل واحد منهم نسخة من الرسالة</div>
+        </div>
+        <div class="field"><label>الموضوع</label><input id="cSubject" value="${subject?subject.replace(/"/g,'&quot;'):''}"></div>
+        <div class="field"><label>نص الرسالة</label><textarea id="cBody"></textarea></div>
+        <div class="error" id="cError">اختر مستلم واحد على الأقل واكتب الموضوع ونص الرسالة</div>
+        <div class="modal-actions">
+          <button class="btn" id="cCancel">إلغاء</button>
+          <button class="btn" id="cSend" style="background:var(--accent);color:#fff;border-color:var(--accent);">إرسال</button>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('cCancel').onclick = ()=>root.innerHTML='';
+  document.getElementById('cSend').onclick = async ()=>{
+    const toIds = Array.from(document.querySelectorAll('#cToList input:checked')).map(i=>i.value);
+    const subject = document.getElementById('cSubject').value.trim();
+    const body = document.getElementById('cBody').value.trim();
+    if(!toIds.length || !subject || !body){
+      document.getElementById('cError').style.display='block';
+      return;
+    }
+    const now = Date.now();
+    toIds.forEach((to, idx)=>{
+      state.messages.push({
+        id: 'm'+now+'-'+idx+Math.random().toString(16).slice(2),
+        from: state.me, to, subject, body, ts: now, readBy:[], archivedBy:[]
+      });
+    });
+    await saveMessages();
+    root.innerHTML = '';
+    setFolder('sent');
+  };
+}
+
+function openAdmin(){
+  const me = state.accounts.find(a=>a.id===state.me);
+  if(!me || !me.admin){ return; }
+  const root = document.getElementById('modalRoot');
+  root.innerHTML = `
+    <div class="overlay" id="adminOverlay">
+      <div class="modal" style="width:520px;">
+        <h3>إدارة الحسابات والصلاحيات</h3>
+        <div id="accList"></div>
+        <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--line);">
+          <div style="font-size:13px;font-weight:600;margin-bottom:12px;">إضافة مستخدم جديد</div>
+          <div class="field-row">
+            <div class="field" style="flex:1;"><label>معرف الحساب</label><input id="newAccId" placeholder="مثل finance"></div>
+            <div class="field" style="flex:1;"><label>اسم الوظيفة</label><input id="newAccName" placeholder="مثل المالية"></div>
+          </div>
+          <div class="field"><label>كلمة مرور مبدئية</label><input id="newAccPass" type="text" placeholder="كلمة المرور"></div>
+          <div class="error" id="aError">أدخل معرف واسم وكلمة مرور صحيحة وغير مكررة</div>
+          <div style="display:flex;justify-content:flex-end;">
+            <button class="btn" id="addAccBtn" style="background:var(--accent);color:#fff;border-color:var(--accent);">+ إضافة المستخدم</button>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn" id="adminClose">إغلاق</button>
+        </div>
+      </div>
+    </div>`;
+  renderAccList();
+  document.getElementById('adminClose').onclick = ()=>{ root.innerHTML=''; populateWhoAmI(); render(); };
+  document.getElementById('addAccBtn').onclick = async ()=>{
+    const id = document.getElementById('newAccId').value.trim().toLowerCase().replace(/\s+/g,'-');
+    const name = document.getElementById('newAccName').value.trim();
+    const password = document.getElementById('newAccPass').value.trim();
+    const err = document.getElementById('aError');
+    if(!id || !name || !password || state.accounts.find(a=>a.id===id)){
+      err.style.display='block'; return;
+    }
+    err.style.display='none';
+    state.accounts.push({id, name, password, active:true, admin:false});
+    await saveAccounts();
+    document.getElementById('newAccId').value='';
+    document.getElementById('newAccName').value='';
+    document.getElementById('newAccPass').value='';
+    renderAccList();
+  };
+}
+
+function renderAccList(){
+  const el = document.getElementById('accList');
+  el.innerHTML = '';
+  state.accounts.forEach(a=>{
+    const row = document.createElement('div');
+    row.className='acc-row';
+    row.innerHTML = `
+      <div>${a.name} <span class="small">(${a.id}@company.local)</span></div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="tag ${a.active?'':'off'}">${a.active?'فعال':'موقوف'}</span>
+        <button class="btn" data-action="edit">تعديل</button>
+        <button class="btn" data-action="pass">كلمة المرور</button>
+        <button class="btn" data-action="toggle">${a.active?'إيقاف':'تفعيل'}</button>
+      </div>`;
+    row.querySelector('[data-action="edit"]').onclick = ()=> openEditAccount(a);
+    row.querySelector('[data-action="toggle"]').onclick = async ()=>{
+      a.active = !a.active;
+      await saveAccounts();
+      renderAccList();
+    };
+    row.querySelector('[data-action="pass"]').onclick = async ()=>{
+      const np = prompt('كلمة المرور الجديدة لحساب ' + a.name);
+      if(np && np.trim()){
+        a.password = np.trim();
+        await saveAccounts();
+        alert('تم تحديث كلمة المرور');
+      }
+    };
+    el.appendChild(row);
+  });
+}
+
+function openEditAccount(a){
+  const div = document.createElement('div');
+  div.className = 'overlay';
+  div.id = 'editAccOverlay';
+  div.innerHTML = `
+    <div class="modal" style="width:380px;">
+      <h3>تعديل بيانات الحساب</h3>
+      <div class="field"><label>المعرف</label><input value="${a.id}@company.local" disabled style="opacity:.6;"></div>
+      <div class="field"><label>اسم الوظيفة</label><input id="eAccName" value="${a.name.replace(/"/g,'&quot;')}"></div>
+      <div class="field"><label>نوع الصلاحية</label>
+        <select id="eAccRole">
+          <option value="user" ${!a.admin?'selected':''}>مستخدم عادي</option>
+          <option value="admin" ${a.admin?'selected':''}>مسؤول (Admin)</option>
+        </select>
+      </div>
+      <div class="error" id="eAccError">من فضلك اكتب اسم صحيح</div>
+      <div class="modal-actions">
+        <button class="btn" id="eAccCancel">إلغاء</button>
+        <button class="btn" id="eAccSave" style="background:var(--accent);color:#fff;border-color:var(--accent);">حفظ</button>
+      </div>
+    </div>`;
+  document.body.appendChild(div);
+  document.getElementById('eAccCancel').onclick = ()=>div.remove();
+  document.getElementById('eAccSave').onclick = async ()=>{
+    const name = document.getElementById('eAccName').value.trim();
+    const role = document.getElementById('eAccRole').value;
+    const err = document.getElementById('eAccError');
+    if(!name){ err.style.display='block'; return; }
+    err.style.display='none';
+    a.name = name;
+    a.admin = (role === 'admin');
+    await saveAccounts();
+    div.remove();
+    renderAccList();
+    populateWhoAmI();
+  };
+}
+
+loadAll();
+</script>
+</body>
+</html>
